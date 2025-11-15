@@ -11,3 +11,28 @@ The forecasts are generated using **Prophet** models trained independently on ea
 
 All code, data processing, forecasting, evaluation, and exports required by the challenge
 are included here.
+
+Here is the result without any regressor:
+
+
+=== Scoring series '28' ===
+  MAPE (model)    : 12.90%
+  MAPE (baseline) : 16.37%
+  FVA%            : 21.16%
+
+=== Scoring series '29' ===
+  MAPE (model)    : 8.91%
+  MAPE (baseline) : 10.87%
+  FVA%            : 18.02%
+
+=== Scoring series '30' ===
+  MAPE (model)    : 11.04%
+  MAPE (baseline) : 15.07%
+  FVA%            : 26.74%
+
+==== SUMMARY (lower MAPE is better, higher FVA% is better) ====
+  series  MAPE_model  MAPE_baseline  FVA_percent
+2     30   11.036318      15.065383    26.743857
+0     28   12.904271      16.366659    21.155128
+1     29    8.913443      10.872644    18.019543
+
