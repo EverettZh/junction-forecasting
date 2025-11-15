@@ -58,3 +58,18 @@ Adding the price regression however, does not improve our FVA, most likely due t
 2     30   11.376808      15.086038    24.587172
 0     28   13.174392      16.382780    19.583904
 1     29    8.947261      10.834303    17.417293
+
+Predicting the price introduces more randomness, does not improve FVA significantly
+
+==== SUMMARY (lower MAPE is better, higher FVA% is better) ====
+  series  MAPE_model  MAPE_baseline  FVA_percent
+2     30   11.376808      15.086038    24.587172
+0     28   13.174392      16.382780    19.583904
+1     29    8.947261      10.834303    17.417293
+
+Here is the overall FVA averages in comparison:
+
+
+
+For price and consumption prediction:
+
