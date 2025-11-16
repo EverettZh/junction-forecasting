@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from prophet import Prophet
-
 # ========= 1. LOAD DATA =========
 df_raw = pd.read_csv(
     "20251111_JUNCTION_training(training_consumption).csv",
@@ -19,6 +18,26 @@ df_raw["measured_at"] = (
 # All other columns = separate series to forecast
 y_cols = [col for col in df_raw.columns if col != "measured_at"]
 print("Series to forecast:", y_cols)
+
+# Identify group columns (all numeric column names except regressors/time)
+exclude_cols = ["measured_at"]
+group_cols = [c for c in df_raw.columns if c not in exclude_cols]
+group_cols = sorted(group_cols, key=int)  # sort by numeric ID
+
+def to_eu_decimal(df):
+    """
+    Convert numeric columns to strings with comma as decimal separator,
+    and keep semicolon-ready DataFrame.
+    """
+    df_str = df.copy()
+    for c in df_str.columns:
+        if c == "measured_at":
+            continue
+        df_str[c] = df_str[c].astype(float).map(
+            lambda x: f"{x:.6f}".replace(".", ",")
+        )
+    return df_str
+
 
 # ========= 2. TRAIN PROPHET MODELS =========
 models = {}
@@ -63,6 +82,74 @@ for col in y_cols:
     forecasts[col] = forecast
 
     print(forecast[["ds", "yhat", "yhat_lower", "yhat_upper"]].tail())
+    
+
+# ---------- 48-Hour Forecast (hourly) ----------
+
+# 1. Build the 48h time index in UTC
+future_48 = pd.DataFrame({
+    "ds": pd.date_range("2024-10-01 00:00:00", "2024-10-02 23:00:00", freq="h")
+})
+
+# 3. Prepare output frame with correct timestamp format
+hourly_out = pd.DataFrame()
+hourly_out["measured_at"] = future_48["ds"].dt.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+# 4. Predict for each group
+for g in group_cols:
+    print(f"Making 48h forecast for group {g}")
+    m = models[g]  # fitted Prophet
+    # Prophet only needs 'ds' for univariate forecasting
+    fc = m.predict(future_48[["ds"]])
+
+    # Clip negatives (just in case) and store
+    hourly_out[g] = fc["yhat"].clip(lower=0)
+
+# 5. Convert to EU decimal format and save as semicolon-separated CSV
+hourly_eu = to_eu_decimal(hourly_out)
+hourly_eu.to_csv("fortum_48h_forecast.csv", sep=";", index=False, encoding="utf-8")
+print("Saved 48h forecast to fortum_48h_forecast.csv")
+
+# ---------- 12-Month Forecast (monthly totals) ----------
+
+# 1. Build hourly future horizon for 12 months (Oct 2024 - Sep 2025)
+future_monthly = pd.DataFrame({
+    "ds": pd.date_range("2024-10-01 00:00:00", "2025-09-30 23:00:00", freq="h")
+})
+
+# 3. Define the 12 month-start timestamps we need in the output
+month_index = pd.date_range("2024-10-01T00:00:00Z", "2025-09-01T00:00:00Z", freq="MS")
+monthly_out = pd.DataFrame()
+monthly_out["measured_at"] = month_index.strftime("%Y-%m-%dT%H:%M:%S.000Z")
+
+# 4. For each group, forecast hourly and aggregate to monthly totals
+for g in group_cols:
+    print(f"Making 12-month forecast for group {g}")
+    m = models[g]
+
+    fc = m.predict(future_monthly[["ds"]])
+
+    tmp = fc[["ds", "yhat"]].copy()
+    tmp["yhat"] = tmp["yhat"].clip(lower=0)
+
+    # Month start for each hourly timestamp
+    tmp["month_start"] = tmp["ds"].dt.to_period("M").dt.to_timestamp().dt.tz_localize("UTC")
+
+    # Sum yhat per month
+    month_sums = tmp.groupby("month_start")["yhat"].sum()
+
+    # Reindex to exactly our 12 months (missing → 0)
+    month_sums = month_sums.reindex(month_index, fill_value=0.0)
+
+    monthly_out[g] = month_sums.values
+
+# 5. Convert to EU decimal format and save
+monthly_eu = to_eu_decimal(monthly_out)
+monthly_eu.to_csv("fortum_12m_forecast.csv", sep=";", index=False, encoding="utf-8")
+print("Saved 12-month forecast to fortum_12m_forecast.csv")
+
+
+# these are FVA calculations
 
 # ========= 3. DEFINE MAPE FUNCTION =========
 def mape(y_true, y_pred):
