@@ -13,3 +13,5 @@ All code, data processing, forecasting, evaluation, and exports required by the 
 are included here.
 
 See our FVA progress for our FVA for each stage of development.
+
+The FVA results tends to do well in colder areas and large consumption and do poorly on warmer areas with little consumptions. For future ideas on how to proceed, we will definitely focus on the poorly predicted area and maybe make a separate prediction for them as well as scraping temperature and weather condition and consider them into the prediction.
