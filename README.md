@@ -12,64 +12,56 @@ The forecasts are generated using **Prophet** models trained independently on ea
 All code, data processing, forecasting, evaluation, and exports required by the challenge
 are included here.
 
-Here is the result without any regressor:
+**Here is the overall FVA averages in comparison:**
 
+For consumption prediction:
+-1.2715501121040884 is barely worse for the entire dataset and the other two did worse.
 
-=== Scoring series '28' ===
-  MAPE (model)    : 12.90%
-  MAPE (baseline) : 16.37%
-  FVA%            : 21.16%
+So we must include this as this is basically as good if not worse than the baseline. It is not too bad though. The majority
+59% did significantly well, while 34% did significantly worse with the rest 7% did around the same. However, the ones did significantly worse
+was really bad and it kind of push our accuracy the other way.
 
-=== Scoring series '29' ===
-  MAPE (model)    : 8.91%
-  MAPE (baseline) : 10.87%
-  FVA%            : 18.02%
+Better (model clearly beats baseline)
 
-=== Scoring series '30' ===
-  MAPE (model)    : 11.04%
-  MAPE (baseline) : 15.07%
-  FVA%            : 26.74%
+Count: 66 / 112 (~59%)
 
-==== SUMMARY (lower MAPE is better, higher FVA% is better) ====
-  series  MAPE_model  MAPE_baseline  FVA_percent
-2     30   11.036318      15.065383    26.743857
-0     28   12.904271      16.366659    21.155128
-1     29    8.913443      10.872644    18.019543
+Examples: 28, 29, 30, 38, 41, 43, 73, 74, 76, 116, …
 
-Adding the price regression however, does not improve our FVA, most likely due to not predicting the price
+Top performers (largest FVA%):
 
-=== Scoring series '28' ===
-  MAPE (model)    : 13.17%
-  MAPE (baseline) : 16.38%
-  FVA%            : 19.58%
+30 → +26.74%
 
-=== Scoring series '29' ===
-  MAPE (model)    : 8.95%
-  MAPE (baseline) : 10.83%
-  FVA%            : 17.42%
+698 → +26.41%
 
-=== Scoring series '30' ===
-  MAPE (model)    : 11.38%
-  MAPE (baseline) : 15.09%
-  FVA%            : 24.59%
+76 → +25.59%
 
-==== SUMMARY (lower MAPE is better, higher FVA% is better) ====
-  series  MAPE_model  MAPE_baseline  FVA_percent
-2     30   11.376808      15.086038    24.587172
-0     28   13.174392      16.382780    19.583904
-1     29    8.947261      10.834303    17.417293
+151 → +25.39%
 
-Predicting the price introduces more randomness, does not improve FVA significantly
+577 → +25.27%
 
-==== SUMMARY (lower MAPE is better, higher FVA% is better) ====
-  series  MAPE_model  MAPE_baseline  FVA_percent
-2     30   11.376808      15.086038    24.587172
-0     28   13.174392      16.382780    19.583904
-1     29    8.947261      10.834303    17.417293
+Worse (model worse than baseline)
 
-Here is the overall FVA averages in comparison:
+Count: 38 / 112 (~34%)
 
+Examples: 36, 37, 39, 40, 42, 157, 196, 199, 201, 231, …
 
+Worst cases (most negative FVA%):
 
-For price and consumption prediction:
+396 → −94.16%
+
+401 → −88.69%
+
+404 → −79.24%
+
+398 → −75.44%
+
+459 → −69.19%
+
+Similar to baseline
+
+Count: 8 / 112 (~7%)
+
+Series with FVA ≈ 0 (model ~ same as baseline):
+295, 298, 307, 450, 466, 573, 623, 708
+
 
